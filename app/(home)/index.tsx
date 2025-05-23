@@ -1,25 +1,69 @@
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import { Link } from 'expo-router'
-import { Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { SignOutButton } from '../../components/SignOutButton'
+import { DailyGoalSetting } from '../../components/DailyGoalSetting'
 
 export default function Page() {
   const { user } = useUser()
 
   return (
-    <View>
+    <View style={styles.container}>
       <SignedIn>
-        <Text>Hello {user?.emailAddresses[0].emailAddress}</Text>
-        <SignOutButton />
+        <View style={styles.welcomeContainer}>
+          <Text style={styles.welcomeText}>Hello {user?.emailAddresses[0].emailAddress}</Text>
+          <SignOutButton />
+        </View>
+        
+        <DailyGoalSetting onGoalUpdated={(goal) => {
+          console.log('Goal updated:', goal);
+          // You can add additional logic here when the goal is updated
+        }} />
       </SignedIn>
       <SignedOut>
-        <Link href="/(auth)/sign-in">
-          <Text>Sign in</Text>
-        </Link>
-        <Link href="/(auth)/sign-up">
-          <Text>Sign up</Text>
-        </Link>
+        <View style={styles.authContainer}>
+          <Link href="/(auth)/sign-in" style={styles.authLink}>
+            <Text style={styles.authLinkText}>Sign in</Text>
+          </Link>
+          <Link href="/(auth)/sign-up" style={styles.authLink}>
+            <Text style={styles.authLinkText}>Sign up</Text>
+          </Link>
+        </View>
       </SignedOut>
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#fff',
+  },
+  welcomeContainer: {
+    marginBottom: 24,
+  },
+  welcomeText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  authContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  authLink: {
+    marginVertical: 10,
+    padding: 15,
+    backgroundColor: '#4285F4',
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
+  },
+  authLinkText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+});
