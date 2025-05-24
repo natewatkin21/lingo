@@ -10,15 +10,25 @@ export default function Page() {
   return (
     <View style={styles.container}>
       <SignedIn>
-        <View style={styles.welcomeContainer}>
-          <Text style={styles.welcomeText}>Hello {user?.emailAddresses[0].emailAddress}</Text>
-          <SignOutButton />
+        <View style={styles.contentContainer}>
+          <View style={styles.welcomeContainer}>
+            <Text style={styles.welcomeText}>Hello {user?.emailAddresses[0].emailAddress}</Text>
+            <SignOutButton />
+          </View>
+          
+          {/* Main content area would go here */}
+          <View style={styles.mainContent}>
+            <Text style={styles.placeholderText}>Main content area</Text>
+          </View>
         </View>
         
-        <DailyGoalSetting onGoalUpdated={(goal) => {
-          console.log('Goal updated:', goal);
-          // You can add additional logic here when the goal is updated
-        }} />
+        {/* Daily goal setting moved to bottom */}
+        <View style={styles.bottomContainer}>
+          <DailyGoalSetting onGoalUpdated={(goal) => {
+            console.log('Goal updated:', goal);
+            // You can add additional logic here when the goal is updated
+          }} />
+        </View>
       </SignedIn>
       <SignedOut>
         <View style={styles.authContainer}>
@@ -37,8 +47,12 @@ export default function Page() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: '#fff',
+    padding: 0,
+  },
+  contentContainer: {
+    flex: 1,
+    padding: 16,
   },
   welcomeContainer: {
     marginBottom: 24,
@@ -47,6 +61,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 12,
+  },
+  mainContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: '#888',
+  },
+  bottomContainer: {
+    width: '100%',
+    borderTopWidth: 1,
+    borderTopColor: '#eaeaea',
   },
   authContainer: {
     alignItems: 'center',

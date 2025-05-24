@@ -17,29 +17,32 @@ export function DailyGoalSetting({ onGoalUpdated }: DailyGoalSettingProps) {
   const [error, setError] = useState<string | null>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   
-  // Get the Clerk session token for Supabase
-  useEffect(() => {
-    async function getToken() {
-      if (session) {
-        try {
-          // Get the default session token
-          const token = await session.getToken();
-          setSessionToken(token);
-        } catch (err) {
-          console.error('Error getting session token:', err);
-        }
-      }
-    }
+  // Function to get a fresh Clerk session token
+  const getFreshToken = async () => {
+    if (!session) return null;
     
-    getToken();
+    try {
+      // Get a fresh token each time
+      const token = await session.getToken();
+      setSessionToken(token);
+      return token;
+    } catch (err) {
+      console.error('Error getting session token:', err);
+      return null;
+    }
+  };
+  
+  // Initial token fetch when session changes
+  useEffect(() => {
+    getFreshToken();
   }, [session]);
 
   // Fetch the current goal when the component mounts
   useEffect(() => {
-    if (user && sessionToken) {
+    if (user && session) {
       fetchCurrentGoal();
     }
-  }, [user, sessionToken]);
+  }, [user, session]);
   
   // Save default goal of 5 minutes for new users
   const saveDefaultGoal = async () => {
@@ -51,8 +54,14 @@ export function DailyGoalSetting({ onGoalUpdated }: DailyGoalSettingProps) {
       
       const defaultGoalMinutes = 5;
       
-      // Insert new default goal
-      const supabase = getSupabaseClient(sessionToken);
+      // Get a fresh token before making the request
+      const freshToken = await getFreshToken();
+      if (!freshToken) {
+        throw new Error('Unable to get authentication token');
+      }
+      
+      // Insert new default goal with fresh token
+      const supabase = getSupabaseClient(freshToken);
       const result = await supabase
         .from('user_goals')
         .insert({ 
@@ -78,14 +87,20 @@ export function DailyGoalSetting({ onGoalUpdated }: DailyGoalSettingProps) {
   };
 
   const fetchCurrentGoal = async () => {
-    if (!user || !sessionToken) return;
+    if (!user) return;
     
     try {
       setIsLoading(true);
       setError(null);
       
-      // Use the authenticated Supabase client
-      const supabase = getSupabaseClient(sessionToken);
+      // Get a fresh token before making the request
+      const freshToken = await getFreshToken();
+      if (!freshToken) {
+        throw new Error('Unable to get authentication token');
+      }
+      
+      // Use the authenticated Supabase client with fresh token
+      const supabase = getSupabaseClient(freshToken);
       
       const { data, error } = await supabase
         .from('user_goals')
@@ -119,7 +134,7 @@ export function DailyGoalSetting({ onGoalUpdated }: DailyGoalSettingProps) {
   };
 
   const saveGoal = async () => {
-    if (!user || !sessionToken) {
+    if (!user) {
       setError('You must be signed in to save a goal');
       return;
     }
@@ -135,8 +150,14 @@ export function DailyGoalSetting({ onGoalUpdated }: DailyGoalSettingProps) {
       setIsSaving(true);
       setError(null);
       
-      // Use the authenticated Supabase client
-      const supabase = getSupabaseClient(sessionToken);
+      // Get a fresh token before making the request
+      const freshToken = await getFreshToken();
+      if (!freshToken) {
+        throw new Error('Unable to get authentication token');
+      }
+      
+      // Use the authenticated Supabase client with fresh token
+      const supabase = getSupabaseClient(freshToken);
       
       // Check if the user already has a goal
       const { data: existingData, error: checkError } = await supabase
@@ -151,17 +172,26 @@ export function DailyGoalSetting({ onGoalUpdated }: DailyGoalSettingProps) {
         throw checkError;
       }
       
+      // Get a fresh token again before the next operation
+      // This is important for longer operations where the token might expire
+      const freshTokenForUpdate = await getFreshToken();
+      if (!freshTokenForUpdate) {
+        throw new Error('Unable to get authentication token');
+      }
+      
+      // Create a new client with the fresh token
+      const supabaseForUpdate = getSupabaseClient(freshTokenForUpdate);
       let result;
       
       if (existingData) {
         // Update existing goal
-        result = await supabase
+        result = await supabaseForUpdate
           .from('user_goals')
           .update({ daily_goal_minutes: goalMinutes, updated_at: new Date() })
           .eq('user_id', user.id);
       } else {
         // Insert new goal
-        result = await supabase
+        result = await supabaseForUpdate
           .from('user_goals')
           .insert({ 
             user_id: user.id, 
