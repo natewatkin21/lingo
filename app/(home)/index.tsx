@@ -1,6 +1,7 @@
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import { Link } from 'expo-router'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import * as voiceService from '../../services/voiceService'
 import { SignOutButton } from '../../components/SignOutButton'
 import { DailyGoalSetting } from '../../components/DailyGoalSetting'
 
@@ -19,6 +20,12 @@ export default function Page() {
           {/* Main content area would go here */}
           <View style={styles.mainContent}>
             <Text style={styles.placeholderText}>Main content area</Text>
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={() => voiceService.testElevenLabsConnection()}
+            >
+              <Text style={styles.buttonText}>Test ElevenLabs Connection</Text>
+            </TouchableOpacity>
           </View>
         </View>
         
@@ -90,6 +97,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   authLinkText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: '#4285F4',
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+    minWidth: 250,
+    alignItems: 'center',
+  },
+  buttonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
