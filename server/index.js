@@ -7,7 +7,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*', // Allow all origins
+  methods: ['GET', 'POST'], // Allow these HTTP methods
+  allowedHeaders: ['Content-Type', 'xi-api-key'] // Allow these headers
+}));
 app.use(express.json());
 
 // ElevenLabs API configuration

@@ -1,9 +1,18 @@
 import Constants from 'expo-constants';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 // Get the server URL
 const isDevice = Constants.executionEnvironment === 'standalone' || Constants.executionEnvironment === 'storeClient';
-const API_URL = isDevice ? 'http://10.10.10.227:3000' : 'http://localhost:3000';
+
+// For iOS simulator, we need to use the machine's actual IP address
+// This is because the simulator runs in a separate network context
+const API_URL = 'http://192.168.18.110:3000';
+
+// Note: 192.168.18.110 is the IP address shown in your Expo output
+// If you change networks or locations, you'll need to update this IP address
+
+// Log the API URL for debugging
+console.log('API URL being used:', API_URL);
 
 /**
  * Test the connection to the ElevenLabs API
@@ -13,7 +22,15 @@ export const testElevenLabsConnection = async (): Promise<{connected: boolean, m
   try {
     console.log('Testing ElevenLabs API connection...');
     
-    const response = await fetch(`${API_URL}/api/test-connection`);
+    // Set up fetch with a timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch(`${API_URL}/api/test-connection`, {
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId); // Clear the timeout if fetch completes
     const data = await response.json();
     
     console.log('Connection test result:', data);
@@ -25,9 +42,19 @@ export const testElevenLabsConnection = async (): Promise<{connected: boolean, m
     }
     
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error testing connection:', error);
-    Alert.alert('Connection Error', 'Failed to test ElevenLabs API connection. Check server logs.');
-    return { connected: false, message: 'Connection test failed' };
+    
+    let errorMessage = 'Failed to test ElevenLabs API connection';
+    
+    if (error.name === 'AbortError') {
+      errorMessage = 'Connection timed out. Make sure the server is running and accessible at ' + API_URL;
+    } else if (error.message) {
+      errorMessage = `${errorMessage}: ${error.message}`;
+    }
+    
+    console.log('Error details:', errorMessage);
+    Alert.alert('Connection Error', errorMessage);
+    return { connected: false, message: errorMessage };
   }
 };
