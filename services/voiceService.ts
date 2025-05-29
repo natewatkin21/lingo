@@ -6,9 +6,9 @@ const isDevice = Constants.executionEnvironment === 'standalone' || Constants.ex
 
 // For iOS simulator, we need to use the machine's actual IP address
 // This is because the simulator runs in a separate network context
-const API_URL = 'http://192.168.18.110:3000';
+const API_URL = 'http://192.168.1.245:3000';
 
-// Note: 192.168.18.110 is the IP address shown in your Expo output
+// Note: 192.168.1.245 is your computer's actual IP address
 // If you change networks or locations, you'll need to update this IP address
 
 // Log the API URL for debugging

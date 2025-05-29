@@ -51,7 +51,10 @@ app.get('/api/test-connection', async (req, res) => {
   }
 });
 
-// Start the server
-app.listen(PORT, () => {
+// Start the server - listen on all network interfaces
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Server accessible at:`);
+  console.log(`- Local: http://localhost:${PORT}`);
+  console.log(`- Network: http://192.168.1.245:${PORT}`);
 });
